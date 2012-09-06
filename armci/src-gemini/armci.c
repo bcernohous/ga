@@ -22,7 +22,20 @@
 #include "parmci.h"
 #include "reg_cache.h"
 
+/* Cray */
+#define HAVE_DMAPP_LOCK 1
+
 #define DEBUG 0
+
+
+#if HAVE_DMAPP_LOCK
+// ARMCI_MAX_LOCKS mirrors the default DMAPP_MAX_LOCKS limit
+// Larger values of ARMCI_MAX_LOCKS will require DMAPP_MAX_LOCKS be set at runtime.
+// DMAPP_MAX_LOCKS has a maxium value of 1023
+#define ARMCI_MAX_LOCKS 128  
+static dmapp_lock_desc_t   lock_desc[ARMCI_MAX_LOCKS];
+static dmapp_lock_handle_t lock_handle[ARMCI_MAX_LOCKS];
+#endif
 
 
 /* exported state */
@@ -314,6 +327,10 @@ static int PARMCI_Get_nbi(void *src, void *dst, int bytes, int proc)
 static void dmapp_network_lock(int proc)
 {
     int dmapp_status;
+
+#if HAVE_DMAPP_LOCK
+    dmapp_lock_acquire( &lock_desc[0], &(l_state.job.data_seg), proc, 0, &lock_handle[0]);
+#else
     reg_entry_t *dst_reg= reg_cache_find(proc, 
             l_state.atomic_lock_buf[proc], sizeof(long));
 
@@ -328,12 +345,17 @@ static void dmapp_network_lock(int proc)
         assert(dmapp_status == DMAPP_RC_SUCCESS);
     }
     while(*(l_state.local_lock_buf) != 0);
+#endif
 }
 
 
 static void dmapp_network_unlock(int proc)
 {
     int dmapp_status;
+
+# if HAVE_DMAPP_LOCK
+    dmapp_lock_release( lock_handle[0], 0 );
+#else
     reg_entry_t *dst_reg= reg_cache_find(proc, 
             l_state.atomic_lock_buf[proc], sizeof(long));
 
@@ -346,6 +368,7 @@ static void dmapp_network_unlock(int proc)
                 proc, l_state.rank + 1, 0);
         assert(dmapp_status == DMAPP_RC_SUCCESS);
     } while (*(l_state.local_lock_buf) != l_state.rank + 1);
+#endif
 }
 
 
@@ -854,16 +877,22 @@ int PARMCI_Free_local(void *ptr)
 
 static void destroy_dmapp_locks(void)
 {
+#if DMAPP_LOCK
+#else
     if (l_state.local_lock_buf)
             PARMCI_Free_local(l_state.local_lock_buf);
 
     if (l_state.atomic_lock_buf)
             PARMCI_Free(l_state.atomic_lock_buf[l_state.rank]);
+#endif
 }
 
 
 static void create_dmapp_locks(void)
 {
+#if DMAPP_LOCK
+    bzero(lock_desc, sizeof(lock_desc));
+#else
     l_state.local_lock_buf = PARMCI_Malloc_local(sizeof(long));
     assert(l_state.local_lock_buf);
 
@@ -874,6 +903,7 @@ static void create_dmapp_locks(void)
 
     *(long *)(l_state.atomic_lock_buf[l_state.rank]) = 0;
     *(long *)(l_state.local_lock_buf) = 0;
+#endif
 
     MPI_Barrier(l_state.world_comm);
 }
@@ -1756,7 +1786,7 @@ static void dmapp_initialize(void)
     requested_attrs.offload_threshold = ARMCI_DMAPP_OFFLOAD_THRESHOLD;
 
     /* Specifies the type of routing to be used. Applies to RMA requests with
-     * PUT semantics and all AMOs. The default is DMAPP_ROUTING_DETERMINISTIC.
+     * PUT semantics and all AMOs. The default is DMAPP_ROUTING_ADAPTIVE.
      * The value can be specified at any time. Note that
      * DMAPP_ROUTING_IN_ORDER guarantees the requests arrive in order and may
      * result in poor performance.  Valid settings are:
@@ -1800,7 +1830,7 @@ static void dmapp_initialize(void)
      * - DMAPP_PI_ORDERING_STRICT   Strict PI (P_PASS_PW=0, NP_PASS_PW=0)
      * - DMAPP_PI_ORDERING_DEFAULT  Default GNI PI (P_PASS_PW=0, NP_PASS_PW=1)
      * - DMAPP_PI_ORDERING_RELAXED  Relaxed PI ordering (P_PASS_PW=1, NP_PASS_PW=1) */
-    requested_attrs.PI_ordering = DMAPP_PI_ORDERING_STRICT;
+    requested_attrs.PI_ordering = DMAPP_PI_ORDERING_RELAXED;
 
     // initialize    
     status = dmapp_init_ext(&requested_attrs, &actual_attrs);
