@@ -574,7 +574,8 @@ int openib_put_nbi(void *src, void *dst, int bytes, int proc)
     remote_reg = reg_cache_find(proc, dst, bytes);
 
     if (!local_reg && l_state.armci_openib_use_dreg) {
-        local_reg = openib_register_memory(src, bytes);
+        openib_register_memory(src, bytes);
+        local_reg = reg_cache_find(l_state.rank, src, bytes);
     }
 
     if (local_reg) {
@@ -621,7 +622,8 @@ int openib_get_nbi(void *src, void *dst, int bytes, int proc)
     assert(remote_reg);
 
     if (!local_reg && l_state.armci_openib_use_dreg) {
-        local_reg = openib_register_memory(dst, bytes);
+        openib_register_memory(dst, bytes);
+        local_reg = reg_cache_find(l_state.rank, dst, bytes);
     }
 
     // Ensure that the registration entries are valid

@@ -2134,7 +2134,7 @@ void NGA_Access_block_grid(int g_a, int index[], void *ptr, int ld[])
      Integer a=(Integer)g_a;
      Integer ndim = wnga_ndim(a);
      Integer _ga_work[MAXDIM], _ga_lo[MAXDIM];
-     COPYC2F(_ga_lo,index, ndim);
+     COPYC2F(index, _ga_lo, ndim);
      wnga_access_block_grid_ptr(a,_ga_lo,ptr,_ga_work);
      COPYF2C(_ga_work,ld, ndim-1);
 }
@@ -2144,7 +2144,7 @@ void NGA_Access_block_grid64(int g_a, int64_t index[], void *ptr, int64_t ld[])
      Integer a=(Integer)g_a;
      Integer ndim = wnga_ndim(a);
      Integer _ga_lo[MAXDIM], _ga_work[MAXDIM];
-     COPYC2F(_ga_lo,index, ndim);
+     COPYC2F(index, _ga_lo, ndim);
      wnga_access_block_grid_ptr(a,_ga_lo,ptr,_ga_work);
      COPYF2C_64(_ga_work,ld, ndim-1);
 }
@@ -2708,15 +2708,13 @@ void NGA_Scatter(int g_a, void *v, int* subsArray[], int n)
     Integer nv = (Integer)n;
     Integer ndim = wnga_ndim(a);
     Integer *_subs_array;
-#if 0
     _subs_array = (Integer *)malloc((int)ndim* n * sizeof(Integer));
     if(_subs_array == NULL) GA_Error("Memory allocation failed.", 0);
     for(idx=0; idx<n; idx++)
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx][i] + 1;
-#endif
     
-    wnga_scatter(a, v, subsArray, 1, nv);
+    wnga_scatter(a, v, _subs_array, nv);
     
     free(_subs_array);
 }
@@ -2736,7 +2734,7 @@ void NGA_Scatter_flat(int g_a, void *v, int subsArray[], int n)
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx*ndim+i] + 1;
     
-    wnga_scatter(a, v, _subs_array, 0, nv);
+    wnga_scatter(a, v, _subs_array, nv);
     
     free(_subs_array);
 }
@@ -2756,7 +2754,7 @@ void NGA_Scatter64(int g_a, void *v, int64_t* subsArray[], int64_t n)
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx][i] + 1;
     
-    wnga_scatter(a, v, _subs_array, 0, nv);
+    wnga_scatter(a, v, _subs_array, nv);
     
     free(_subs_array);
 }
@@ -2776,7 +2774,7 @@ void NGA_Scatter_flat64(int g_a, void *v, int64_t subsArray[], int64_t n)
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx*ndim+i] + 1;
     
-    wnga_scatter(a, v, _subs_array, 0, nv);
+    wnga_scatter(a, v, _subs_array, nv);
     
     free(_subs_array);
 }
@@ -2789,15 +2787,13 @@ void NGA_Scatter_acc(int g_a, void *v, int* subsArray[], int n, void *alpha)
     Integer nv = (Integer)n;
     Integer ndim = wnga_ndim(a);
     Integer *_subs_array;
-#if 0
     _subs_array = (Integer *)malloc((int)ndim* n * sizeof(Integer));
     if(_subs_array == NULL) GA_Error("Memory allocation failed.", 0);
     for(idx=0; idx<n; idx++)
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx][i] + 1;
-#endif
     
-    wnga_scatter_acc(a, v, subsArray, 1, nv, alpha);
+    wnga_scatter_acc(a, v, _subs_array, nv, alpha);
     
     free(_subs_array);
 }
@@ -2817,7 +2813,7 @@ void NGA_Scatter_acc_flat(int g_a, void *v, int subsArray[], int n, void *alpha)
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx*ndim+i] + 1;
     
-    wnga_scatter_acc(a, v, _subs_array, 0, nv, alpha);
+    wnga_scatter_acc(a, v, _subs_array, nv, alpha);
     
     free(_subs_array);
 }
@@ -2836,7 +2832,7 @@ void NGA_Scatter_acc64(int g_a, void *v, int64_t* subsArray[], int64_t n, void *
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx][i] + 1;
     
-    wnga_scatter_acc(a, v, _subs_array, 0, nv, alpha);
+    wnga_scatter_acc(a, v, _subs_array, nv, alpha);
     
     free(_subs_array);
 }
@@ -2856,7 +2852,7 @@ void NGA_Scatter_acc_flat64(int g_a, void *v, int64_t subsArray[], int64_t n, vo
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx*ndim+i] + 1;
     
-    wnga_scatter_acc(a, v, _subs_array, 0, nv, alpha);
+    wnga_scatter_acc(a, v, _subs_array, nv, alpha);
     
     free(_subs_array);
 }
@@ -2868,7 +2864,6 @@ void NGA_Gather(int g_a, void *v, int* subsArray[], int n)
     Integer nv = (Integer)n;
     Integer ndim = wnga_ndim(a);
     Integer *_subs_array;
-#if 0
     _subs_array = (Integer *)malloc((int)ndim* n * sizeof(Integer));
     if(_subs_array == NULL) GA_Error("Memory allocation failed.", 0);
 
@@ -2876,9 +2871,8 @@ void NGA_Gather(int g_a, void *v, int* subsArray[], int n)
     for(idx=0; idx<n; idx++)
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx][i] + 1;
-#endif
     
-    wnga_gather(a, v, subsArray, 1, nv);
+    wnga_gather(a, v, _subs_array, nv);
     
     free(_subs_array);
 }
@@ -2899,7 +2893,7 @@ void NGA_Gather_flat(int g_a, void *v, int subsArray[], int n)
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx*ndim+i] + 1;
     
-    wnga_gather(a, v, _subs_array, 0, nv);
+    wnga_gather(a, v, _subs_array, nv);
     
     free(_subs_array);
 }
@@ -2921,7 +2915,7 @@ void NGA_Gather64(int g_a, void *v, int64_t* subsArray[], int64_t n)
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx][i] + 1;
     
-    wnga_gather(a, v, _subs_array, 0, nv);
+    wnga_gather(a, v, _subs_array, nv);
     
     free(_subs_array);
 }
@@ -2942,7 +2936,7 @@ void NGA_Gather_flat64(int g_a, void *v, int64_t subsArray[], int64_t n)
         for(i=0; i<ndim; i++)
             _subs_array[idx*ndim+(ndim-i-1)] = subsArray[idx*ndim+i] + 1;
     
-    wnga_gather(a, v, _subs_array, 0, nv);
+    wnga_gather(a, v, _subs_array, nv);
     
     free(_subs_array);
 }
@@ -2970,7 +2964,7 @@ void GA_Dgemm_c(char ta, char tb, int m, int n, int k,
   Integer cjlo = 1;
   Integer cjhi = n;
   
-  wnga_matmul(&ta, &tb, (DoublePrecision *)&alpha,(DoublePrecision *)&beta,
+  pnga_matmul(&ta, &tb, (DoublePrecision *)&alpha,(DoublePrecision *)&beta,
 	    G_a, ailo, aihi, ajlo, ajhi,
 	    G_b, bilo, bihi, bjlo, bjhi,
 	    G_c, cilo, cihi, cjlo, cjhi);
@@ -2999,7 +2993,7 @@ void GA_Zgemm_c(char ta, char tb, int m, int n, int k,
   Integer cjlo = 1;
   Integer cjhi = n;
   
-  wnga_matmul(&ta, &tb, (DoublePrecision *)&alpha,(DoublePrecision *)&beta,
+  pnga_matmul(&ta, &tb, (DoublePrecision *)&alpha,(DoublePrecision *)&beta,
 	    G_a, ailo, aihi, ajlo, ajhi,
 	    G_b, bilo, bihi, bjlo, bjhi,
 	    G_c, cilo, cihi, cjlo, cjhi);
@@ -3028,7 +3022,7 @@ void GA_Cgemm_c(char ta, char tb, int m, int n, int k,
   Integer cjlo = 1;
   Integer cjhi = n;
   
-  wnga_matmul(&ta, &tb, (float *)&alpha,(float *)&beta,
+  pnga_matmul(&ta, &tb, (float *)&alpha,(float *)&beta,
 	    G_a, ailo, aihi, ajlo, ajhi,
 	    G_b, bilo, bihi, bjlo, bjhi,
 	    G_c, cilo, cihi, cjlo, cjhi);
@@ -3057,7 +3051,7 @@ void GA_Sgemm_c(char ta, char tb, int m, int n, int k,
   Integer cjlo = 1;
   Integer cjhi = n;
   
-  wnga_matmul(&ta, &tb, (float*)&alpha, (float*)&beta,
+  pnga_matmul(&ta, &tb, (float*)&alpha, (float*)&beta,
 	    G_a, ailo, aihi, ajlo, ajhi,
 	    G_b, bilo, bihi, bjlo, bjhi,
 	    G_c, cilo, cihi, cjlo, cjhi);
@@ -3085,7 +3079,7 @@ void GA_Dgemm64_c(char ta, char tb, int64_t m, int64_t n, int64_t k,
   Integer cjlo = 1;
   Integer cjhi = n;
   
-  wnga_matmul(&ta, &tb, (DoublePrecision *)&alpha,(DoublePrecision *)&beta,
+  pnga_matmul(&ta, &tb, (DoublePrecision *)&alpha,(DoublePrecision *)&beta,
 	    G_a, ailo, aihi, ajlo, ajhi,
 	    G_b, bilo, bihi, bjlo, bjhi,
 	    G_c, cilo, cihi, cjlo, cjhi);
@@ -3114,7 +3108,7 @@ void GA_Zgemm64_c(char ta, char tb, int64_t m, int64_t n, int64_t k,
   Integer cjlo = 1;
   Integer cjhi = n;
   
-  wnga_matmul(&ta, &tb, (DoublePrecision *)&alpha,(DoublePrecision *)&beta,
+  pnga_matmul(&ta, &tb, (DoublePrecision *)&alpha,(DoublePrecision *)&beta,
 	    G_a, ailo, aihi, ajlo, ajhi,
 	    G_b, bilo, bihi, bjlo, bjhi,
 	    G_c, cilo, cihi, cjlo, cjhi);
@@ -3143,7 +3137,7 @@ void GA_Cgemm64_c(char ta, char tb, int64_t m, int64_t n, int64_t k,
   Integer cjlo = 1;
   Integer cjhi = n;
   
-  wnga_matmul(&ta, &tb, (float *)&alpha,(float *)&beta,
+  pnga_matmul(&ta, &tb, (float *)&alpha,(float *)&beta,
 	    G_a, ailo, aihi, ajlo, ajhi,
 	    G_b, bilo, bihi, bjlo, bjhi,
 	    G_c, cilo, cihi, cjlo, cjhi);
@@ -3172,7 +3166,7 @@ void GA_Sgemm64_c(char ta, char tb, int64_t m, int64_t n, int64_t k,
   Integer cjlo = 1;
   Integer cjhi = n;
   
-  wnga_matmul(&ta, &tb, (float*)&alpha, (float*)&beta,
+  pnga_matmul(&ta, &tb, (float*)&alpha, (float*)&beta,
 	    G_a, ailo, aihi, ajlo, ajhi,
 	    G_b, bilo, bihi, bjlo, bjhi,
 	    G_c, cilo, cihi, cjlo, cjhi);
@@ -3180,7 +3174,7 @@ void GA_Sgemm64_c(char ta, char tb, int64_t m, int64_t n, int64_t k,
 
 /**
  * When calling GA _dgemm from the C, it is represented as follows (since the
- * underlying GA dgemm implementation wnga_matmul is in Fortran style)
+ * underlying GA dgemm implementation pnga_matmul is in Fortran style)
  *   C(m,n) = A(m,k) * B(k,n)
  * Since GA internally creates GAs in Fortran style, we remap the above
  * expression to: C(n,m) = B(n,k) * A(k,m) and pass it to fortran. This
@@ -3224,7 +3218,7 @@ void GA_Zgemm64(char ta, char tb, int64_t m, int64_t n, int64_t k,
                 DoubleComplex alpha, int g_a, int g_b, 
                 DoubleComplex beta, int g_c )
 {
-    GA_Zgemm64_c(ta, tb, n, m, k, alpha, g_b, g_a, beta, g_c);
+    GA_Zgemm64_c(tb, ta, n, m, k, alpha, g_b, g_a, beta, g_c);
 }
 
 void GA_Cgemm64(char ta, char tb, int64_t m, int64_t n, int64_t k,
@@ -3299,7 +3293,7 @@ void GA_Matmul_patch(char transa, char transb, void* alpha, void *beta,
     alo[0]=ailo+1; ahi[0]=aihi+1; alo[1]=ajlo+1; ahi[1]=ajhi+1;
     blo[0]=bilo+1; bhi[0]=bihi+1; blo[1]=bjlo+1; bhi[1]=bjhi+1;
     clo[0]=cilo+1; chi[0]=cihi+1; clo[1]=cjlo+1; chi[1]=cjhi+1;
-    wnga_matmul_patch(transa, transb, alpha, beta, g_a, alo, ahi,
+    pnga_matmul_patch(transa, transb, alpha, beta, g_a, alo, ahi,
                          g_b, blo, bhi, g_c, clo, chi);
 #else
     Integer Iailo=ailo+1, Iaihi=aihi+1, Iajlo=ajlo+1, Iajhi=ajhi+1;
@@ -3337,7 +3331,7 @@ void GA_Matmul_patch64(char transa, char transb, void* alpha, void *beta,
     alo[0]=ailo+1; ahi[0]=aihi+1; alo[1]=ajlo+1; ahi[1]=ajhi+1;
     blo[0]=bilo+1; bhi[0]=bihi+1; blo[1]=bjlo+1; bhi[1]=bjhi+1;
     clo[0]=cilo+1; chi[0]=cihi+1; clo[1]=cjlo+1; chi[1]=cjhi+1;
-    wnga_matmul_patch(transa, transb, alpha, beta, g_a, alo, ahi,
+    pnga_matmul_patch(transa, transb, alpha, beta, g_a, alo, ahi,
                          g_b, blo, bhi, g_c, clo, chi);
 #else
     Integer Iailo=ailo+1, Iaihi=aihi+1, Iajlo=ajlo+1, Iajhi=ajhi+1;
@@ -3386,7 +3380,7 @@ void NGA_Matmul_patch(char transa, char transb, void* alpha, void *beta,
     COPYINDEX_C2F(clo,_ga_clo, cndim);
     COPYINDEX_C2F(chi,_ga_chi, cndim);
     
-    wnga_matmul_patch(&transb, &transa, alpha, beta,
+    pnga_matmul_patch(&transb, &transa, alpha, beta,
 		     b, _ga_blo, _ga_bhi,
 		     a, _ga_alo, _ga_ahi,
 		     c, _ga_clo, _ga_chi);
@@ -3419,7 +3413,7 @@ void NGA_Matmul_patch64(char transa, char transb, void* alpha, void *beta,
     COPYINDEX_C2F(clo,_ga_clo, cndim);
     COPYINDEX_C2F(chi,_ga_chi, cndim);
     
-    wnga_matmul_patch(&transb, &transa, alpha, beta,
+    pnga_matmul_patch(&transb, &transa, alpha, beta,
 		     b, _ga_blo, _ga_bhi,
 		     a, _ga_alo, _ga_ahi,
 		     c, _ga_clo, _ga_chi);

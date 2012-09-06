@@ -16,9 +16,9 @@
 
 /* min acceptable amount of memory (in elements) and default chunk size */
 #  define MINMEM 64
-#  define CHUNK_SIZE 2048
+#  define CHUNK_SIZE 256
 #  define MAX_CHUNKS 1024
-#  define BLOCK_SIZE 4096 /* temp buf size for pinning */
+#  define BLOCK_SIZE 1024 /* temp buf size for pinning */
 #  define GA_ASPECT_RATIO 3
 #  define NUM_MATS 3 
 #  define MINTASKS 10 /* increase this if there is high load imbalance */

@@ -127,6 +127,12 @@ void wgp_release_update_element(Integer g_p, Integer *subscript)
 }
 
 
+void wgp_scatter(Integer g_p, Integer nv, Integer *subscript, void **buf_ptr, void *buf_size, Integer *size, Integer checksize, Integer intsize)
+{
+    pgp_scatter(g_p, nv, subscript, buf_ptr, buf_size, size, checksize, intsize);
+}
+
+
 void wgp_set_chunk(Integer g_p, Integer *chunk)
 {
     pgp_set_chunk(g_p, chunk);
@@ -136,6 +142,18 @@ void wgp_set_chunk(Integer g_p, Integer *chunk)
 void wgp_set_dimensions(Integer g_p, Integer ndim, Integer *dims, Integer intsize)
 {
     pgp_set_dimensions(g_p, ndim, dims, intsize);
+}
+
+
+void wgp_set_irreg_distr(Integer g_p, Integer *mapc, Integer *nblock)
+{
+    pgp_set_irreg_distr(g_p, mapc, nblock);
+}
+
+
+void wgp_sync()
+{
+    pgp_sync();
 }
 
 

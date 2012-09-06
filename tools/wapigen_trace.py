@@ -111,6 +111,9 @@ class Function(object):
         sig += ')'
         return sig
 
+    def has_return(self):
+        return 'void' not in self.return_type or '*' in self.return_type
+
     def get_signature(self, name=None):
         sig = self.return_type[:]
         sig += ' '
@@ -186,17 +189,17 @@ class Function(object):
             tracer += '    pnga_inquire_type(g_a, &_atype);\n'
         if self.args_have_beta():
             tracer += '    pnga_inquire_type(g_b, &_btype);\n'
-        if 'void' not in func.return_type:
+        if func.has_return():
             tracer += '    %s retval;\n' % self.return_type
         pf,slot = self.get_tracer_printf(False,slot)
         tracer += '    %s;\n' % pf
         tracer += '    '
-        if 'void' not in func.return_type:
+        if func.has_return():
             tracer += 'retval = '
         tracer += '%s;\n' % self.get_call()
         pf,slot = self.get_tracer_printf(True,slot)
         tracer += '    %s;\n' % pf
-        if 'void' not in func.return_type:
+        if func.has_return():
             tracer += '    return retval;\n'
         return tracer
 

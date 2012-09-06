@@ -77,6 +77,9 @@ class Function(object):
         sig += ')'
         return sig
 
+    def has_return(self):
+        return 'void' not in self.return_type or '*' in self.return_type
+
     def get_signature(self, name=None):
         sig = self.return_type[:]
         sig += ' '
@@ -129,7 +132,7 @@ if __name__ == '__main__':
         if 'terminate' in name:
             continue
         maybe_return = ''
-        if 'void' not in func.return_type:
+        if func.has_return():
             maybe_return = 'return '
         func = functions[name]
         wnga_name = name.replace('pnga_','wnga_')

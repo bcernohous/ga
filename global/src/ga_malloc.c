@@ -7,10 +7,10 @@
 
 #include "globalp.h"
 #include "ga-papi.h"
+#include "ga-wapi.h"
 #define GA_MAXMEM_AVAIL ( ( (long)1 << (8*sizeof(Integer)-2) ) -1)
 #define CHECK           0
 #define ALIGNMENT       sizeof(DoubleComplex)
-#define USE_ARMCI_MALLOC 0
 
 static void * (*ga_ext_alloc)(size_t, int, char *);
 static void (*ga_ext_free)(void *);
@@ -42,10 +42,6 @@ void* ga_malloc(Integer nelem, int type, char *name)
     extra = 2*ALIGNMENT/item_size;
     nelem += extra;
 
-#if USE_ARMCI_MALLOC
-    bytes = nelem*item_size;
-    addr = ARMCI_Malloc_local(bytes);
-#else
     if(ga_usesMA) { /* Uses Memory Allocator (MA) */
        if(MA_push_stack(type,nelem,name,&handle))  MA_get_pointer(handle,&ptr);
        else pnga_error("ga_malloc: MA_push_stack failed",0);
@@ -56,7 +52,6 @@ void* ga_malloc(Integer nelem, int type, char *name)
        addr  = (unsigned long)(*ga_ext_alloc)(
                (size_t)bytes, (int)item_size, name);
     }
-#endif
 
     /* Address Alignment */
     adjust = (Integer) (addr%ALIGNMENT);
@@ -77,14 +72,10 @@ void ga_free(void *ptr)
     ptr = ((char*)ptr)-ALIGNMENT;
     handle= *((Integer*)ptr); /* retreive handle */
 
-#if USE_ARMCI_MALLOC
-    ARMCI_Free_local((char *)ptr - handle);
-#else
     if(ga_usesMA) {
       if(!MA_pop_stack(handle)) pnga_error("ga_free: MA_pop_stack failed",0);}
     else /*make sure to free original(before address alignment) pointer*/
       (*ga_ext_free)((char *)ptr - handle);
-#endif
 }
 
 #if HAVE_SYS_WEAK_ALIAS_PRAGMA

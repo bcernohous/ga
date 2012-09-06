@@ -36,7 +36,6 @@ static long count_pnga_bin_index = 0;
 static long count_pnga_bin_sorter = 0;
 static long count_pnga_brdcst = 0;
 static long count_pnga_check_handle = 0;
-static long count_pnga_check_notify = 0;
 static long count_pnga_cluster_nnodes = 0;
 static long count_pnga_cluster_nodeid = 0;
 static long count_pnga_cluster_nprocs = 0;
@@ -141,10 +140,8 @@ static long count_pnga_nbget_ghost_dir = 0;
 static long count_pnga_nblock = 0;
 static long count_pnga_nbput = 0;
 static long count_pnga_nbput_field = 0;
-static long count_pnga_nbput_notify = 0;
 static long count_pnga_nbtest = 0;
 static long count_pnga_nbwait = 0;
-static long count_pnga_nbwait_notify = 0;
 static long count_pnga_ndim = 0;
 static long count_pnga_nnodes = 0;
 static long count_pnga_nodeid = 0;
@@ -292,7 +289,6 @@ static double time_pnga_bin_index = 0;
 static double time_pnga_bin_sorter = 0;
 static double time_pnga_brdcst = 0;
 static double time_pnga_check_handle = 0;
-static double time_pnga_check_notify = 0;
 static double time_pnga_cluster_nnodes = 0;
 static double time_pnga_cluster_nodeid = 0;
 static double time_pnga_cluster_nprocs = 0;
@@ -397,10 +393,8 @@ static double time_pnga_nbget_ghost_dir = 0;
 static double time_pnga_nblock = 0;
 static double time_pnga_nbput = 0;
 static double time_pnga_nbput_field = 0;
-static double time_pnga_nbput_notify = 0;
 static double time_pnga_nbtest = 0;
 static double time_pnga_nbwait = 0;
-static double time_pnga_nbwait_notify = 0;
 static double time_pnga_ndim = 0;
 static double time_pnga_nnodes = 0;
 static double time_pnga_nodeid = 0;
@@ -798,19 +792,6 @@ void wnga_check_handle(Integer g_a, char *string)
     pnga_check_handle(g_a, string);
     local_stop = MPI_Wtime();
     time_pnga_check_handle += local_stop - local_start;
-}
-
-
-logical wnga_check_notify(Integer g_a, void *bufn, void *expected)
-{
-    logical return_value;
-    double local_start, local_stop;
-    ++count_pnga_check_notify;
-    local_start = MPI_Wtime();
-    return_value = pnga_check_notify(g_a, bufn, expected);
-    local_stop = MPI_Wtime();
-    time_pnga_check_notify += local_stop - local_start;
-    return return_value;
 }
 
 
@@ -1388,12 +1369,12 @@ void wnga_fill_patch(Integer g_a, Integer *lo, Integer *hi, void *val)
 }
 
 
-void wnga_gather(Integer g_a, void *v, void *subscript, Integer c_flag, Integer nv)
+void wnga_gather(Integer g_a, void *v, Integer subscript[], Integer nv)
 {
     double local_start, local_stop;
     ++count_pnga_gather;
     local_start = MPI_Wtime();
-    pnga_gather(g_a, v, subscript, c_flag, nv);
+    pnga_gather(g_a, v, subscript, nv);
     local_stop = MPI_Wtime();
     time_pnga_gather += local_stop - local_start;
 }
@@ -2014,17 +1995,6 @@ void wnga_nbput_field(Integer g_a, Integer *lo, Integer *hi, Integer foff, Integ
 }
 
 
-void wnga_nbput_notify(Integer g_a, Integer *lo, Integer *hi, void *buf, Integer *ld, Integer g_b, Integer *ecoords, void *bufn, Integer *nbhandle)
-{
-    double local_start, local_stop;
-    ++count_pnga_nbput_notify;
-    local_start = MPI_Wtime();
-    pnga_nbput_notify(g_a, lo, hi, buf, ld, g_b, ecoords, bufn, nbhandle);
-    local_stop = MPI_Wtime();
-    time_pnga_nbput_notify += local_stop - local_start;
-}
-
-
 Integer wnga_nbtest(Integer *nbhandle)
 {
     Integer return_value;
@@ -2046,17 +2016,6 @@ void wnga_nbwait(Integer *nbhandle)
     pnga_nbwait(nbhandle);
     local_stop = MPI_Wtime();
     time_pnga_nbwait += local_stop - local_start;
-}
-
-
-void wnga_nbwait_notify(Integer *nbhandle)
-{
-    double local_start, local_stop;
-    ++count_pnga_nbwait_notify;
-    local_start = MPI_Wtime();
-    pnga_nbwait_notify(nbhandle);
-    local_stop = MPI_Wtime();
-    time_pnga_nbwait_notify += local_stop - local_start;
 }
 
 
@@ -2719,12 +2678,12 @@ void wnga_scan_copy(Integer g_a, Integer g_b, Integer g_sbit, Integer lo, Intege
 }
 
 
-void wnga_scatter(Integer g_a, void *v, void *subscript, Integer c_flag, Integer nv)
+void wnga_scatter(Integer g_a, void *v, Integer *subscript, Integer nv)
 {
     double local_start, local_stop;
     ++count_pnga_scatter;
     local_start = MPI_Wtime();
-    pnga_scatter(g_a, v, subscript, c_flag, nv);
+    pnga_scatter(g_a, v, subscript, nv);
     local_stop = MPI_Wtime();
     time_pnga_scatter += local_stop - local_start;
 }
@@ -2741,12 +2700,12 @@ void wnga_scatter2d(Integer g_a, void *v, Integer *i, Integer *j, Integer nv)
 }
 
 
-void wnga_scatter_acc(Integer g_a, void *v, void *subscript, Integer c_flag, Integer nv, void *alpha)
+void wnga_scatter_acc(Integer g_a, void *v, Integer subscript[], Integer nv, void *alpha)
 {
     double local_start, local_stop;
     ++count_pnga_scatter_acc;
     local_start = MPI_Wtime();
-    pnga_scatter_acc(g_a, v, subscript, c_flag, nv, alpha);
+    pnga_scatter_acc(g_a, v, subscript, nv, alpha);
     local_stop = MPI_Wtime();
     time_pnga_scatter_acc += local_stop - local_start;
 }
@@ -3683,14 +3642,6 @@ void wnga_terminate()
                     total_time/total_count);
         }
 
-        MPI_Reduce(&count_pnga_check_notify, &total_count, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&time_pnga_check_notify, &total_time, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        if (me == 0 && total_count > 0) {
-            printf("pnga_check_notify,%ld,%lf,%ld,%lf,%lf\n",
-                    count_pnga_check_notify, time_pnga_check_notify, total_count, total_time,
-                    total_time/total_count);
-        }
-
         MPI_Reduce(&count_pnga_cluster_nnodes, &total_count, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(&time_pnga_cluster_nnodes, &total_time, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         if (me == 0 && total_count > 0) {
@@ -4523,14 +4474,6 @@ void wnga_terminate()
                     total_time/total_count);
         }
 
-        MPI_Reduce(&count_pnga_nbput_notify, &total_count, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&time_pnga_nbput_notify, &total_time, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        if (me == 0 && total_count > 0) {
-            printf("pnga_nbput_notify,%ld,%lf,%ld,%lf,%lf\n",
-                    count_pnga_nbput_notify, time_pnga_nbput_notify, total_count, total_time,
-                    total_time/total_count);
-        }
-
         MPI_Reduce(&count_pnga_nbtest, &total_count, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(&time_pnga_nbtest, &total_time, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         if (me == 0 && total_count > 0) {
@@ -4544,14 +4487,6 @@ void wnga_terminate()
         if (me == 0 && total_count > 0) {
             printf("pnga_nbwait,%ld,%lf,%ld,%lf,%lf\n",
                     count_pnga_nbwait, time_pnga_nbwait, total_count, total_time,
-                    total_time/total_count);
-        }
-
-        MPI_Reduce(&count_pnga_nbwait_notify, &total_count, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&time_pnga_nbwait_notify, &total_time, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        if (me == 0 && total_count > 0) {
-            printf("pnga_nbwait_notify,%ld,%lf,%ld,%lf,%lf\n",
-                    count_pnga_nbwait_notify, time_pnga_nbwait_notify, total_count, total_time,
                     total_time/total_count);
         }
 

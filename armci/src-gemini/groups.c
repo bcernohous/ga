@@ -247,7 +247,8 @@ void ARMCI_Group_create_child(
         }
         /* SK: sanity check for the following bitwise operations */
         assert(grp_me>=0);
-        MPI_Comm_dup(MPI_COMM_SELF, &comm); /* FIXME: can be optimized away */
+        status = MPI_Comm_dup(MPI_COMM_SELF, &comm); /* FIXME: can be optimized away */
+        assert(status == MPI_SUCCESS);
         local_ldr_pos = grp_me;
         while(n>lvl) {
             int tag=0;
@@ -256,11 +257,15 @@ void ARMCI_Group_create_child(
                 int remote_leader = pid_list[remote_ldr_pos];
                 MPI_Comm peer_comm = *comm_parent;
                 int high = (local_ldr_pos<remote_ldr_pos)?0:1;
-                MPI_Intercomm_create(
+                status = MPI_Intercomm_create(
                         comm, 0, peer_comm, remote_leader, tag, &comm1);
-                MPI_Comm_free(&comm);
-                MPI_Intercomm_merge(comm1, high, &comm2);
-                MPI_Comm_free(&comm1);
+                assert(status == MPI_SUCCESS);
+                status = MPI_Comm_free(&comm);
+                assert(status == MPI_SUCCESS);
+                status = MPI_Intercomm_merge(comm1, high, &comm2);
+                assert(status == MPI_SUCCESS);
+                status = MPI_Comm_free(&comm1);
+                assert(status == MPI_SUCCESS);
                 comm = comm2;
             }
             local_ldr_pos &= ((~0)^lvl);
@@ -268,9 +273,11 @@ void ARMCI_Group_create_child(
         }
         *comm_child = comm;
         /* cleanup temporary group (from MPI_Group_incl above) */
-        MPI_Group_free(group_child);
+        status = MPI_Group_free(group_child);
+        assert(status == MPI_SUCCESS);
         /* get the actual group associated with comm */
-        MPI_Comm_group(*comm_child, group_child);
+        status = MPI_Comm_group(*comm_child, group_child);
+        assert(status == MPI_SUCCESS);
     }
 }
 
