@@ -1,3 +1,7 @@
+*.o
+*.lo
+*.a
+*.la
 *.svn
 .svn2git_currev
 .svn2git_curlog
