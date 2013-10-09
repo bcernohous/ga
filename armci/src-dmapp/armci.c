@@ -2788,3 +2788,27 @@ void armci_unlockmem(int proc) {
     assert(0);
 }
 
+
+// public api to get/set the values of internal objects that
+// can be set using the the environmental variables:
+// ARMCI_DMAPP_LOCK_ON_GET/_PUT at runtime
+
+int armci_get_use_locks_on_get() {
+    return use_locks_on_get;
+}
+
+void armci_set_use_locks_on_get(int val) {
+    assert(val == 0 || val == 1);
+    use_locks_on_get = val;
+}
+
+int armci_get_use_locks_on_put(int val) {
+    return use_locks_on_put;
+}
+
+void armci_set_use_locks_on_put(int val) {
+    assert(val == 0 || val == 1);
+    use_locks_on_put = val;
+}
+
+

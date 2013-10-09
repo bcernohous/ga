@@ -29,6 +29,11 @@ extern void ARMCI_Barrier(void);    /* ARMCI Barrier*/
 extern int ARMCI_Put(void *src, void* dst, int bytes, int proc);
 extern int ARMCI_Put_flag(void *src, void* dst,int bytes,int *f,int v,int proc);
 
+extern int armci_get_use_locks_on_get();
+extern int armci_get_use_locks_on_put();
+extern void armci_set_use_locks_on_get(int);
+extern void armci_set_use_locks_on_put(int);
+
 /* On path for deprecation */
 #define ARMCI_Put1(_s,_d,_b,_p) memcpy(_d,_s,_b), 0
 
